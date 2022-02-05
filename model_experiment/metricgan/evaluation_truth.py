@@ -1,12 +1,14 @@
 # %%
 import os
 import time
+from unittest import result
 from tqdm import tqdm
 # import tqdm
 # import tqdm.asyncio
 import numpy as np
 import soundfile as sf
 import pickle
+import multiprocessing
 
 import torch
 import torchaudio
@@ -30,18 +32,25 @@ name_list = os.listdir(root)
 error_file_list = []
 
 start = time.perf_counter()
-for noise_file_path in tqdm(list(train_map.keys())):
+args = [(noise_file_path, train_map[noise_file_path]) for noise_file_path in list(train_map.keys())]
+pool = multiprocessing.Pool(processes=60)
+results =pool.starmap_async(get_pesq, args)
+# truth_score = results.get()
+pool.close()
+pool.join()
 
-    clean_file_path = train_map[noise_file_path]
-    try:
-        score = get_pesq(noise_file_path, clean_file_path)
-        truth_score.append(score)
-    except:
-        error_file_list.append(noise_file_path)
+# for noise_file_path in tqdm(list(train_map.keys())):
+
+#     clean_file_path = train_map[noise_file_path]
+#     try:
+#         score = get_pesq(noise_file_path, clean_file_path)
+#         truth_score.append(score)
+#     except:
+#         error_file_list.append(noise_file_path)
 print(time.perf_counter() - start)
 print('truth_score_ave:', np.mean(truth_score))
 
-with open('train_truth_score.npy', 'wb') as f:
-    np.save(f, np.array(truth_score))
-with open('train_truth_score_error_name.npy', 'wb') as f:
-    np.save(f, np.array(error_file_list))
+# with open('train_truth_score.npy', 'wb') as f:
+#     np.save(f, np.array(truth_score))
+# with open('train_truth_score_error_name.npy', 'wb') as f:
+#     np.save(f, np.array(error_file_list))
