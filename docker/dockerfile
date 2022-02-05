@@ -15,6 +15,7 @@ RUN apt-get update -y && \
     tmux \
     zip\
     unzip\
+    libsndfile1\
     openssh-server \
     libgl1-mesa-glx \
     && apt-get autoremove -y \
@@ -28,6 +29,6 @@ RUN pip install flake8 yapf lmdb pillow\
     natsort matplotlib \
     wandb jupyter pandas fire tqdm scipy \
      deepspeed  pesq\
-    cython numpy 
+    cython numpy soundfile
 
 Run conda install -c pytorch torchaudio -y
