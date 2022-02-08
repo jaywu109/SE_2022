@@ -121,7 +121,7 @@ enhance_model = Enhance(args)
 
 # %%
 root = '/workspace/data/train'
-output_dir = '/workspace/output_data/metricgan/train'
+output_dir = '/workspace/output_data/db-aiat/train'
 
 for flac_name in tqdm(os.listdir(root)):
     if flac_name.endswith('.flac'):

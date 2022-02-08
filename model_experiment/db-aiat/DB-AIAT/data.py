@@ -18,7 +18,7 @@ class To_Tensor(object):
         elif type == 'int':
             return  torch.IntTensor(x)
 
-class TrainDataset(Dataset):
+class TrainDataset(Dataset): # can pre-process the data here. and don't have to set up minibatch
     def __init__(self, json_dir, batch_size):
         self.json_dir = json_dir
         self.batch_size = batch_size
@@ -117,7 +117,6 @@ def cv_generate_feats_labels(batch):
     feat_list, label_list, frame_mask_list = [], [], []
     to_tensor = To_Tensor()
     for id in range(len(batch)):
-#        clean_file_name = '%s_%s.wav' % (batch[id].split('_')[0], batch[id].split('_')[1])
         clean_file_name = '%s.wav' %(batch[id])
         mix_file_name = '%s.wav' % (batch[id])
         feat_wav, _= sf.read(os.path.join(file_path,  'valset_noisy', mix_file_name))
