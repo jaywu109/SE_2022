@@ -7,9 +7,9 @@ import os
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--local_rank", type=int)
-args = parser.parse_args()
+args_cuda = parser.parse_args()
 import torch
-torch.cuda.set_device(args.local_rank)
+torch.cuda.set_device(args_cuda.local_rank)
 torch.distributed.init_process_group(backend='nccl')
 
 import numpy as np
@@ -44,18 +44,34 @@ with open('/workspace/SE_2022/val_noise_by_type.pkl', 'rb') as f:
 with open('/workspace/SE_2022/train_map.pkl', 'rb') as f:
     noise_clean_map = pickle.load(f)
 
-data_dir = '/workspace/data/train'
-train_path_array = get_noise_clean_path(data_dir, train_noise, noise_clean_map)
-val_path_array = get_noise_clean_path(data_dir, val_noise, noise_clean_map)
-train_dataset = SEDataset(train_path_array, args.batch_size)
-val_dataset = SEDataset(val_path_array, args.batch_size)
+noise_path_list = []
+clean_path_list = []
+for noise_path in (noise_clean_map.keys()):
+    noise_path_list.append(noise_path)
+    clean_path_list.append(noise_clean_map[noise_path])
+train_path_array = np.array([np.array(noise_path_list), np.array(clean_path_list)]).T
+
+root = '/workspace/data/test'
+test_path_list = []
+for flac_name in os.listdir(root):
+    if flac_name.endswith('.flac'):
+        test_path_list.append(os.path.join(root, flac_name))
+test_path_array = np.array([np.array(test_path_list), np.array(test_path_list)]).T  
+
+train_dataset = SEDataset(train_path_array, 3)
+val_dataset = SEDataset(test_path_array, 3)
+# data_dir = '/workspace/data/train'
+# train_path_array = get_noise_clean_path(data_dir, train_noise, noise_clean_map)
+# val_path_array = get_noise_clean_path(data_dir, val_noise, noise_clean_map)
+# train_dataset = SEDataset(train_path_array[:200], 3)
+# val_dataset = SEDataset(val_path_array[:200], 3)
 train_dataloader = SEDataLoader(data_set=train_dataset,
                                 batch_size=1,
-                                num_workers=args.num_workers,
+                                num_workers=3,
                                 pin_memory=True)
 val_dataloader = SEDataLoader(data_set=val_dataset,
                                 batch_size=1,
-                                num_workers=args.num_workers,
+                                num_workers=3,
                                 pin_memory=True)
 data = {'tr_loader': train_dataloader, 'cv_loader': val_dataloader}
 

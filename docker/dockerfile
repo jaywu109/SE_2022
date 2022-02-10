@@ -31,4 +31,4 @@ RUN pip install flake8 yapf lmdb pillow\
      deepspeed  pesq\
     cython numpy soundfile
 
-Run conda install -c pytorch torchaudio -y
+RUN conda install -c pytorch torchaudio -y

@@ -60,7 +60,7 @@ def com_mag_mse_loss(esti, label, frame_list):
     return 0.5 * (loss1 + loss2)
 
 
-def pesq_loss(esti_list, label_list, frame_list):
+def pesq_loss(esti_list, label_list, frame_list, is_train):
     with torch.no_grad():
         esti_mag, esti_phase = torch.norm(esti_list, dim=1), torch.atan2(esti_list[:, -1, :, :], esti_list[:, 0, :, :])
         label_mag, label_phase = torch.norm(label_list, dim=1), torch.atan2(label_list[:, -1, :, :],
@@ -94,15 +94,21 @@ def pesq_loss(esti_list, label_list, frame_list):
             esti_utts.append(t_esti)
             clean_utts.append(t_label)
 
-        cv_pesq_score = Parallel(n_jobs=30)(delayed(eval_pesq)(id, esti_utts, clean_utts) for id in range(utt_num))
+        cv_pesq_score = Parallel(n_jobs=30)(delayed(eval_pesq)(id, esti_utts, clean_utts, is_train) for id in range(utt_num))
         cv_pesq_score = np.mean(cv_pesq_score)
     return 4.50 - cv_pesq_score
 
 
-def eval_pesq(id, esti_utts, clean_utts):
-    clean_utt = clean_utts[id]
-    esti_utt = esti_utts[id]
-    #pesq_score = pesq(16000, clean_utt, esti_utt, 'wb')
-    pesq_score = pesq(clean_utt, esti_utt, fs=16000)
+def eval_pesq(id, esti_utts, clean_utts, is_train = True):
+    if is_train:
+        ref_audio = clean_utts[id]
+        worse_audio = esti_utts[id]
+    else:
+        worse_audio = clean_utts[id]
+        ref_audio = esti_utts[id]        
+    try:
+        pesq_score = pesq(16000, ref_audio, worse_audio, mode='wb')
+    except:
+        pesq_score = 0
 
     return pesq_score

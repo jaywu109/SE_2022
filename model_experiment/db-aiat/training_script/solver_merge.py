@@ -153,7 +153,7 @@ class Solver(object):
                 self.optimizer.step()
             else:
                 if is_pesq:
-                    batch_loss_res = pesq_loss(esti_list, batch_label, batch_frame_mask_list)
+                    batch_loss_res = pesq_loss(esti_list, batch_label, batch_frame_mask_list, is_train=False)
                 else:
                     batch_loss = com_mag_mse_loss(esti_list, batch_label, batch_frame_mask_list)
                     batch_loss_res = batch_loss.item()
