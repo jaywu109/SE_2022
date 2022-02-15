@@ -4,6 +4,7 @@ import os
 from Backup_pesq import com_mse_loss, com_mag_mse_loss, pesq_loss
 import hdf5storage
 import gc
+from collections import OrderedDict
 
 
 feat_type = 'sqrt' #the compression on magnitude  # normal, sqrt, cubic, log_1x
@@ -33,21 +34,36 @@ class Solver(object):
         self._reset()
 
     def _reset(self):
-        if self.is_conti:
-            checkpoint = torch.load(self.conti_path)
-            self.model.load_state_dict(checkpoint)
-            self.start_epoch = 0
-            self.prev_cv_loss = float("inf")
-            self.best_cv_loss = float("inf")
-            self.cv_no_impv = 0
-            self.having = False
-        else:
-        #Reset
-            self.start_epoch = 0
-            self.prev_cv_loss = float("inf")
-            self.best_cv_loss = float("inf")
-            self.cv_no_impv = 0
-            self.having = False
+        state_dict = torch.load('/workspace/SE_2022/model_experiment/db-aiat/training_script/1st_trial_30epoch/BEST_MODEL/best.pth.tar')
+        ckpt = torch.load('/workspace/SE_2022/model_experiment/db-aiat/training_script/1st_trial_30epoch/CP_dir/checkpoint_early_exit_10th.pth.tar')
+
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            name = k[7:] # remove `module.`
+            new_state_dict[name] = v   
+        self.model.load_state_dict(new_state_dict)
+        
+        self.start_epoch = 0
+        self.prev_cv_loss = ckpt['cv_loss']
+        self.best_cv_loss = ckpt['best_cv_loss']
+        self.cv_no_impv = 0
+        self.having = False
+
+        # if self.is_conti:
+        #     checkpoint = torch.load(self.conti_path)
+        #     self.model.load_state_dict(checkpoint)
+        #     self.start_epoch = 0
+        #     self.prev_cv_loss = float("inf")
+        #     self.best_cv_loss = float("inf")
+        #     self.cv_no_impv = 0
+        #     self.having = False
+        # else:
+        # #Reset
+        #     self.start_epoch = 0
+        #     self.prev_cv_loss = float("inf")
+        #     self.best_cv_loss = float("inf")
+        #     self.cv_no_impv = 0
+        #     self.having = False
 
     def train(self):
         self.model = torch.nn.parallel.DistributedDataParallel(self.model, find_unused_parameters=True)
