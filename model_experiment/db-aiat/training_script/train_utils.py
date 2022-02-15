@@ -11,8 +11,8 @@ parser = argparse.ArgumentParser("gated complex convolutional recurrent neural n
 
 is_conti = True
 batch_size = 3
-epochs = 30
-lr = 5e-4
+epochs = 15
+lr = 5e-5
 half_lr = 1
 early_stop = 10
 shuffle = 1
